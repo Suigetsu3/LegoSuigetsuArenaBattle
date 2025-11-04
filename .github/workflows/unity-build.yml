@@ -1,0 +1,39 @@
+name: Build Android (Unity)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/unity3d
+            ~/.local/share/unity3d
+          key: ${{ runner.os }}-unity-${{ matrix.unity_version }}-cache
+
+      - name: Setup Unity (game-ci)
+        uses: game-ci/unity-actions/setup@v2
+        with:
+          unityVersion: '2021.3.20f1' # change to desired version
+
+      - name: Build project
+        uses: game-ci/unity-builder@v2
+        with:
+          targetPlatform: android
+          buildName: build.apk
+          buildType: Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/*.apk
